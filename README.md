@@ -21,6 +21,10 @@ It allows you to search for text in your project.
 
 <p></p>
 
+![screenshot](https://github.com/user-attachments/assets/dfd41d8f-1ad2-450e-be74-ff049483f603)
+
+<p></p>
+
 </div>
 
 ## Install
