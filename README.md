@@ -69,6 +69,8 @@ require('lazy').setup({
 
 Search for text in your project via the command:
 
+### Search for text
+
 ```
 :Tf <search-term>
 ```
@@ -80,7 +82,15 @@ require('tafuta').run("[search term here, can be regex too]")
 ```
 
 If you omit the search term,
-it will prompt you for one (via `input()`).
+and just run
+
+```lua
+require('tafuta').run()
+```
+
+it will prompt you for a search term.
+
+### Search for word under cursor
 
 You can also search for the word under the cursor via:
 
