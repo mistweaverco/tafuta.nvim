@@ -2,7 +2,11 @@ local M = {}
 
 M.defaults = {
   -- The user command to run the search e.g. `:Tf <query>`
-  user_command = "Tf",
+  user_command_prompt = "Tf",
+  -- The user command to search for the word under the cursor e.g. `:Tfc`
+  user_command_cursor = "Tfc",
+  -- The ripgrep options to use when searching, e.g. `{"--hidden", "--no-ignore-vcs"}`
+  rg_options = nil,
 }
 
 M.options = {}

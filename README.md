@@ -42,16 +42,18 @@ require('lazy').setup({
   {
     'mistweaverco/tafuta.nvim',
     -- Make sure this matches the command you want to use and the command pass to setup
+    -- as user_command_prompt and user_command_cursor
     -- e.g. if you want to use `:Rg` then the cmd should be `Rg`
     -- If you don't want to use a command, you can omit this option completely
-    cmd = { "Tf" },
+    cmd = { "Tf", "Tfc" },
     config = function()
       -- Setup is required, even if you don't pass any options
       require('tafuta').setup({
         -- The user command to run the search e.g. `:Tf <query>`
         -- Default: "Tf", but it can be anything you want.
         -- If you don't want a command, you can set it to `nil`
-        user_command = "Tf",
+        user_command_prompt = "Tf",
+        user_command_cursor = "Tfc",
         -- rg options, a lua table of options to pass to rg,
         -- e.g. { "--hidden", "--no-ignore" }
         -- Default: nil
@@ -65,6 +67,8 @@ require('lazy').setup({
 
 ## Usage
 
+Search for text in your project via the command:
+
 ```
 :Tf <search-term>
 ```
@@ -77,3 +81,15 @@ require('tafuta').run("[search term here, can be regex too]")
 
 If you omit the search term,
 it will prompt you for one (via `input()`).
+
+You can also search for the word under the cursor via:
+
+```
+:Tfc
+```
+
+or via calling a lua function:
+
+```lua
+require('tafuta').cursor()
+```

@@ -24,6 +24,20 @@ local async_run = vim.schedule_wrap(function(res)
   end
 end)
 
+local function get_word_under_cursor()
+  local _, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local line = vim.api.nvim_get_current_line()
+  if col == #line then
+    col = col - 1
+  end
+  local start_col, end_col = line:find("%w+", col + 1)
+  if start_col and end_col then
+    return line:sub(start_col, end_col)
+  else
+    return nil
+  end
+end
+
 local search = function(search_query)
   local search_command = { "rg", "--vimgrep" }
   local rg_options = CONFIG.get().rg_options
@@ -38,9 +52,10 @@ end
 
 M.setup = function(config)
   CONFIG.setup(config)
-  local user_command = CONFIG.get().user_command
-  if user_command ~= nil then
-    vim.api.nvim_create_user_command(user_command, function(a)
+  local user_command_prompt = CONFIG.get().user_command_prompt
+  local user_command_cursor = CONFIG.get().user_command_cursor
+  if user_command_prompt ~= nil then
+    vim.api.nvim_create_user_command(user_command_prompt, function(a)
       if a.args == "" then
         vim.notify("❌ No search query provided", vim.log.levels.INFO, { title = "Tafuta" })
         return
@@ -49,6 +64,14 @@ M.setup = function(config)
     end, {
       nargs = "?",
       desc = "Tf, blazingly fast ⚡ search 🔍 using ripgrep 🦀",
+    })
+  end
+  if user_command_cursor ~= nil then
+    vim.api.nvim_create_user_command(user_command_cursor, function()
+      M.cursor()
+    end, {
+      nargs = 0,
+      desc = "Search for the word under the cursor",
     })
   end
 end
@@ -62,6 +85,15 @@ M.run = function(search_query)
     search_query = vim.fn.input("Search: ")
   end
   search(search_query)
+end
+
+M.cursor = function()
+  local word = get_word_under_cursor()
+  if word == nil then
+    vim.notify("❌ no word under cursor", vim.log.levels.INFO, { title = "Tafuta" })
+    return
+  end
+  search(word)
 end
 
 M.version = function()
