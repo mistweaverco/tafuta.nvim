@@ -67,9 +67,11 @@ require('lazy').setup({
 
 ## Usage
 
-Search for text in your project via the command:
+You can either search for *any text* or search for the word under the cursor.
 
 ### Search for text
+
+Search for text in your project via the command:
 
 ```
 :Tf <search-term>
