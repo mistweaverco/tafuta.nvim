@@ -49,7 +49,7 @@ require('lazy').setup({
     config = function()
       -- Setup is required, even if you don't pass any options
       require('tafuta').setup({
-        -- The user command to run the search e.g. `:Tf <query>`
+        -- The user command to run the search e.g. `:Tf <flags> <query>`
         -- Default: "Tf", but it can be anything you want.
         -- If you don't want a command, you can set it to `nil`
         user_command_prompt = "Tf",
@@ -74,23 +74,44 @@ You can either search for *any text* or search for the word under the cursor.
 Search for text in your project via the command:
 
 ```
-:Tf <search-term>
+:Tf <rg-flags> <search-term>
 ```
 
 or via calling a lua function:
 
 ```lua
-require('tafuta').run("[search term here, can be regex too]")
+require('tafuta').run("[rg-flags] [search_term]")
 ```
 
-If you omit the search term,
-and just run
+#### Example
+
+Search for "Neovim version" in the project:
+
+> [!NOTE]
+> You need to escape all spaces in the search term,
+> when using the user command.
+
+```
+:Tf --hidden --no-ignore Neovim\ version
+```
+
+or via calling a lua function:
 
 ```lua
-require('tafuta').run()
+require('tafuta').run({"--hidden", "--no-ignore", "Neovim version"})
 ```
 
-it will prompt you for a search term.
+Also with default options:
+
+```
+:Tf Neovim\ version
+```
+
+or via calling a lua function:
+
+```lua
+require('tafuta').run({"Neovim version"})
+```
 
 ### Search for word under cursor
 

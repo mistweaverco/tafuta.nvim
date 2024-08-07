@@ -38,13 +38,17 @@ local function get_word_under_cursor()
   end
 end
 
-local search = function(search_query)
+local search = function(search_opts)
+  -- the search query is the last item in the table
+  local search_query = search_opts[#search_opts]
+  -- search flags are all the items in the table except the last one
+  local search_flags = search_opts
+  table.remove(search_flags, #search_flags)
   local search_command = { "rg", "--vimgrep" }
-  local rg_options = CONFIG.get().rg_options
-  if rg_options ~= nil then
-    for _, option in ipairs(rg_options) do
-      table.insert(search_command, option)
-    end
+  local rg_options = CONFIG.get().rg_options or {}
+  rg_options = vim.tbl_deep_extend("force", search_flags, rg_options)
+  for _, option in ipairs(rg_options) do
+    table.insert(search_command, option)
   end
   table.insert(search_command, search_query)
   vim.system(search_command, { text = true }, async_run)
@@ -60,9 +64,9 @@ M.setup = function(config)
         vim.notify("❌ No search query provided", vim.log.levels.INFO, { title = "Tafuta" })
         return
       end
-      M.run(a.args)
+      M.run(a.fargs)
     end, {
-      nargs = "?",
+      nargs = "+",
       desc = "Tf, blazingly fast ⚡ search 🔍 using ripgrep 🦀",
     })
   end
@@ -76,15 +80,16 @@ M.setup = function(config)
   end
 end
 
-M.run = function(search_query)
+M.run = function(search_opts)
   if not rg_installed then
     vim.notify("❌ ripgrep not found on the system", vim.log.levels.WARN, { title = "Tafuta" })
     return
   end
-  if search_query == nil then
-    search_query = vim.fn.input("Search: ")
+  if search_opts == nil then
+    vim.notify("❌ no search query provided", vim.log.levels.INFO, { title = "Tafuta" })
+    return
   end
-  search(search_query)
+  search(search_opts)
 end
 
 M.cursor = function()
@@ -93,7 +98,7 @@ M.cursor = function()
     vim.notify("❌ no word under cursor", vim.log.levels.INFO, { title = "Tafuta" })
     return
   end
-  search(word)
+  search({ word })
 end
 
 M.version = function()
