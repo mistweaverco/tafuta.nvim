@@ -42,10 +42,10 @@ require('lazy').setup({
   {
     'mistweaverco/tafuta.nvim',
     -- Make sure this matches the command you want to use and the command pass to setup
-    -- as user_command_prompt and user_command_cursor
+    -- as user_command_prompt, user_command_cursor and user_command_live
     -- e.g. if you want to use `:Rg` then the cmd should be `Rg`
     -- If you don't want to use a command, you can omit this option completely
-    cmd = { "Tf", "Tfc" },
+    cmd = { "Tf", "Tfc", "Tfl" },
     config = function()
       -- Setup is required, even if you don't pass any options
       require('tafuta').setup({
@@ -54,7 +54,8 @@ require('lazy').setup({
         -- If you don't want a command, you can set it to `nil`
         user_command_prompt = "Tf",
         user_command_cursor = "Tfc",
-        -- rg options, a lua table of options to pass to rg,
+        user_command_live = "Tfl",
+        -- rg options, a lua table of options to pass to rg as default,
         -- e.g. { "--hidden", "--no-ignore" }
         -- Default: nil
         -- See `rg --help` for more options
@@ -128,3 +129,26 @@ or via calling a lua function:
 ```lua
 require('tafuta').cursor()
 ```
+
+#### Live search
+
+You can also search with live results via:
+
+> [!NOTE]
+> You need to escape all spaces in the live search
+
+```
+:Tfl
+```
+
+or via calling a lua function:
+
+```lua
+require('tafuta').live()
+```
+
+> [!TIP]
+> You can also pass flags to the live search
+> Just prepend your flags to the command like so:
+> `--hidden --no-ignore --smart-case Search\ for\ word`
+
