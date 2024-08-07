@@ -1,8 +1,71 @@
 local GLOBALS = require("tafuta.globals")
 local CONFIG = require("tafuta.config")
+local UI = require("tafuta.ui")
+local UTILS = require("tafuta.utils")
 local M = {}
 
 local rg_installed = vim.fn.executable("rg") == 1
+
+local function focus_quickfix()
+  -- Get the list of all windows
+  local windows = vim.api.nvim_list_wins()
+  for _, win in ipairs(windows) do
+    -- Check if the window is a quickfix list
+    if vim.fn.getwininfo(win)[1].quickfix == 1 then
+      -- Focus on the quickfix list window
+      vim.api.nvim_set_current_win(win)
+      break
+    end
+  end
+end
+
+function M.live()
+  UI.input({
+    on_confirm = function(textstring)
+      if textstring == "" then
+        return
+      end
+      focus_quickfix()
+    end,
+    on_change = function(textstring)
+      local t = UTILS.split_args(textstring)
+      M.run(t, { live = true })
+    end,
+  }, {
+    title = "Live-Search",
+  })
+end
+
+local async_run_live = vim.schedule_wrap(function(res)
+  local code = res.code
+  if code == 0 then
+    local matches = vim.split(res.stdout, "\n", { trimempty = true })
+    if vim.tbl_isempty(matches) then
+      vim.notify("❌ no match", vim.log.levels.INFO, { title = "Tafuta" })
+      return
+    end
+    vim.fn.setqflist({}, "r", {
+      title = "Tafuta results (" .. #matches .. ")",
+      lines = matches,
+    })
+    -- Save the current window ID
+    local current_win = vim.api.nvim_get_current_win()
+    -- Open the quickfix list
+    vim.cmd("copen")
+    -- Return focus to the previously focused window
+    vim.api.nvim_set_current_win(current_win)
+  elseif code == 1 then
+    vim.fn.setqflist({}, "r", {
+      title = "Tafuta results",
+      lines = {},
+    })
+  else
+    vim.fn.setqflist({}, "r", {
+      title = "Tafuta results",
+      lines = {},
+    })
+  end
+end)
 
 local async_run = vim.schedule_wrap(function(res)
   local code = res.code
@@ -38,7 +101,7 @@ local function get_word_under_cursor()
   end
 end
 
-local search = function(search_opts)
+local search = function(search_opts, opts)
   -- the search query is the last item in the table
   local search_query = search_opts[#search_opts]
   -- search flags are all the items in the table except the last one
@@ -51,13 +114,18 @@ local search = function(search_opts)
     table.insert(search_command, option)
   end
   table.insert(search_command, search_query)
-  vim.system(search_command, { text = true }, async_run)
+  if opts and opts.live then
+    vim.system(search_command, { text = true }, async_run_live)
+  else
+    vim.system(search_command, { text = true }, async_run)
+  end
 end
 
 M.setup = function(config)
   CONFIG.setup(config)
   local user_command_prompt = CONFIG.get().user_command_prompt
   local user_command_cursor = CONFIG.get().user_command_cursor
+  local user_command_live = CONFIG.get().user_command_live
   if user_command_prompt ~= nil then
     vim.api.nvim_create_user_command(user_command_prompt, function(a)
       if a.args == "" then
@@ -78,9 +146,18 @@ M.setup = function(config)
       desc = "Search for the word under the cursor",
     })
   end
+  if user_command_live ~= nil then
+    vim.api.nvim_create_user_command(user_command_live, function()
+      M.live()
+    end, {
+      nargs = 0,
+      desc = "Live search",
+    })
+  end
 end
 
-M.run = function(search_opts)
+M.run = function(search_opts, opts)
+  opts = opts or {}
   if not rg_installed then
     vim.notify("❌ ripgrep not found on the system", vim.log.levels.WARN, { title = "Tafuta" })
     return
@@ -89,7 +166,7 @@ M.run = function(search_opts)
     vim.notify("❌ no search query provided", vim.log.levels.INFO, { title = "Tafuta" })
     return
   end
-  search(search_opts)
+  search(search_opts, opts)
 end
 
 M.cursor = function()
@@ -98,7 +175,7 @@ M.cursor = function()
     vim.notify("❌ no word under cursor", vim.log.levels.INFO, { title = "Tafuta" })
     return
   end
-  search({ word })
+  M.run({ word })
 end
 
 M.version = function()
