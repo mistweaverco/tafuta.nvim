@@ -80,7 +80,7 @@ Search for text in your project via the command:
 or via calling a lua function:
 
 ```lua
-require('tafuta').run("[rg-flags] [search_term]")
+require('tafuta').run({"[rg-flag1]", "[rg-flag2]", "[search_term]"})
 ```
 
 #### Example
@@ -101,7 +101,9 @@ or via calling a lua function:
 require('tafuta').run({"--hidden", "--no-ignore", "Neovim version"})
 ```
 
-Also with default options:
+#### Example without flags
+
+Also with default options and without flags:
 
 ```
 :Tf Neovim\ version
