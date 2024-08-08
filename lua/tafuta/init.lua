@@ -34,6 +34,12 @@ function M.live()
   }, {
     title = "Live-Search",
   })
+  -- Save the current window ID
+  local current_win = vim.api.nvim_get_current_win()
+  -- Open the quickfix list
+  vim.cmd("copen")
+  -- Return focus to the previously focused window
+  vim.api.nvim_set_current_win(current_win)
 end
 
 local async_run_live = vim.schedule_wrap(function(res)
@@ -48,12 +54,6 @@ local async_run_live = vim.schedule_wrap(function(res)
       title = "Tafuta results (" .. #matches .. ")",
       lines = matches,
     })
-    -- Save the current window ID
-    local current_win = vim.api.nvim_get_current_win()
-    -- Open the quickfix list
-    vim.cmd("copen")
-    -- Return focus to the previously focused window
-    vim.api.nvim_set_current_win(current_win)
   elseif code == 1 then
     vim.fn.setqflist({}, "r", {
       title = "Tafuta results",
